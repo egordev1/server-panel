@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление выделенными серверами</title>
+    <!-- Tailwind CSS через CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome для иконок -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .status-active {
+            @apply bg-green-100 text-green-800;
+        }
+        .status-maintenance {
+            @apply bg-yellow-100 text-yellow-800;
+        }
+        .progress-bar {
+            @apply w-full bg-gray-200 rounded-full h-2;
+        }
+        .progress-fill {
+            @apply h-2 rounded-full;
+        }
+    </tailwind.config>
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-server text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-900">Dedicated</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm font-medium">AD</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar -->
+            <aside class="lg:w-64 flex-shrink-0">
+                <nav class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <ul class="space-y-2">
+                        <li><button onclick="openTab('dashboard')" class="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-blue-700 bg-blue-50"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</button></li>
+                        <li><button onclick="openTab('projects')" class="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"><i class="fas fa-server mr-3"></i> Projects</button></li>
+                        <li><button onclick="openTab('resources')" class="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"><i class="fas fa-microchip mr-3"></i> Resources</button></li>
+                        <li><button onclick="openTab('settings')" class="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"><i class="fas fa-cog mr-3"></i> Settings</button></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1">
+                <!-- Dashboard -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard</h2>
+                        
+                        <!-- Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="p-6 bg-white rounded-lg border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Всего проектов</p>
+                                        <p class="text-2xl font-bold text-gray-900" id="total-projects">3</p>
+                                    </div>
+                                    <div class="p-3 bg-blue-100 rounded-lg">
+                                        <i class="fas fa-server text-blue-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-white rounded-lg border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Активные</p>
+                                        <p class="text-2xl font-bold text-gray-900" id="active-projects">2</p>
+                                    </div>
+                                    <div class="p-3 bg-green-100 rounded-lg">
+                                        <i class="fas fa-check-circle text-green-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-white rounded-lg border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">В обслуживании</p>
+                                        <p class="text-2xl font-bold text-gray-900" id="maintenance-projects">1</p>
+                                    </div>
+                                    <div class="p-3 bg-yellow-100 rounded-lg">
+                                        <i class="fas fa-cog text-yellow-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-white rounded-lg border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Общее хранилище</p>
+                                        <p class="text-2xl font-bold text-gray-900" id="total-storage">448 GB</p>
+                                    </div>
+                                    <div class="p-3 bg-purple-100 rounded-lg">
+                                        <i class="fas fa-hdd text-purple-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Недавние проекты</h3>
+                            <div id="recent-projects" class="space-y-3">
+                                <!-- Будет заполнено через JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div id="projects" class="tab-content">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900">Проекты</h2>
+                                <p class="text-gray-600 mt-1">Управление проектами на выделенном сервере</p>
+                            </div>
+                            <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i> Новый проект
+                            </button>
+                        </div>
+
+                        <div class="relative mb-6">
+                            <i class="fas fa-search absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="search-input" onkeyup="searchProjects()" placeholder="Поиск проектов..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div id="projects-list">
+                            <!-- Будет заполнено через JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resources -->
+                <div id="resources" class="tab-content">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Ресурсы сервера</h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="p-6 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-microchip text-blue-600 mr-2"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">CPU</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Использование</span>
+                                        <span class="font-medium">42%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-blue-600" style="width: 42%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div><span class="text-gray-500">Всего:</span> 16 vCPU</div>
+                                        <div><span class="text-gray-500">Используется:</span> 6.72 vCPU</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-memory text-green-600 mr-2"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Память</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Использование</span>
+                                        <span class="font-medium">68%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-green-600" style="width: 68%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div><span class="text-gray-500">Всего:</span> 64 GB</div>
+                                        <div><span class="text-gray-500">Используется:</span> 43.5 GB</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-hdd text-purple-600 mr-2"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Хранилище</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Использование</span>
+                                        <span class="font-medium">35%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill bg-purple-600" style="width: 35%"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div><span class="text-gray-500">Всего:</span> 2 TB</div>
+                                        <div><span class="text-gray-500">Используется:</span> 716 GB</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <i class="fas fa-network-wired text-orange-600 mr-2"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Сеть</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Входящий</p>
+                                            <p class="text-2xl font-bold">142 Mbps</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Исходящий</p>
+                                            <p class="text-2xl font-bold">89 Mbps</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <p>Public IP: 203.0.113.45</p>
+                                        <p>Private IP: 10.0.0.1</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div id="settings" class="tab-content">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Настройки сервера</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Имя сервера</label>
+                                <input type="text" value="dedicated-server-01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ОС</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Ubuntu 22.04 LTS</option>
+                                    <option>CentOS 8</option>
+                                    <option>Debian 11</option>
+                                    <option>Windows Server 2022</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SSH Порт</label>
+                                <input type="number" value="22" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Правила брандмауэра</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium">HTTP (80)</p>
+                                            <p class="text-xs text-gray-500">Разрешить веб-трафик</p>
+                                        </div>
+                                        <input type="checkbox" checked class="w-4 h-4">
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium">HTTPS (443)</p>
+                                            <p class="text-xs text-gray-500">Разрешить HTTPS</p>
+                                        </div>
+                                        <input type="checkbox" checked class="w-4 h-4">
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium">MySQL (3306)</p>
+                                            <p class="text-xs text-gray-500">Разрешить БД</p>
+                                        </div>
+                                        <input type="checkbox" class="w-4 h-4">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Новый проект</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                    <input type="text" id="project-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Название проекта">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+                    <textarea id="project-desc" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Описание"></textarea>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CPU</label>
+                        <select id="project-cpu" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="2">2 vCPU</option>
+                            <option value="4">4 vCPU</option>
+                            <option value="8">8 vCPU</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">RAM</label>
+                        <select id="project-ram" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="4">4 GB</option>
+                            <option value="8">8 GB</option>
+                            <option value="16">16 GB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Storage</label>
+                        <select id="project-storage" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="64">64 GB</option>
+                            <option value="128">128 GB</option>
+                            <option value="256">256 GB</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="hideModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg">Отмена</button>
+                <button onclick="addProject()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        let projects = [
+            { id: 1, name: 'E-commerce Platform', status: 'active', cpu: '4 vCPU', memory: '8 GB', storage: '256 GB', ip: '192.168.1.100', desc: 'Онлайн магазин с платежами' },
+            { id: 2, name: 'Analytics Dashboard', status: 'active', cpu: '2 vCPU', memory: '4 GB', storage: '128 GB', ip: '192.168.1.101', desc: 'Система аналитики' },
+            { id: 3, name: 'CMS', status: 'maintenance', cpu: '2 vCPU', memory: '4 GB', storage: '64 GB', ip: '192.168.1.102', desc: 'Система управления контентом' }
+        ];
+
+        // Tab switching
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update sidebar active state
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('bg-blue-50', 'text-blue-700');
+                btn.classList.add('text-gray-600');
+            });
+            event.target.classList.add('bg-blue-50', 'text-blue-700');
+            event.target.classList.remove('text-gray-600');
+        }
+
+        // Modal
+        function showModal() {
+            document.getElementById('project-modal').classList.remove('hidden');
+        }
+        function hideModal() {
+            document.getElementById('project-modal').classList.add('hidden');
+        }
+
+        // Add new project
+        function addProject() {
+            const name = document.getElementById('project-name').value;
+            if (!name) return;
+            
+            const newProject = {
+                id: projects.length + 1,
+                name: name,
+                status: 'active',
+                cpu: document.getElementById('project-cpu').value + ' vCPU',
+                memory: document.getElementById('project-ram').value + ' GB',
+                storage: document.getElementById('project-storage').value + ' GB',
+                ip: `192.168.1.${100 + projects.length}`,
+                desc: document.getElementById('project-desc').value || 'Новый проект'
+            };
+            
+            projects.push(newProject);
+            hideModal();
+            document.getElementById('project-name').value = '';
+            document.getElementById('project-desc').value = '';
+            renderProjects();
+            updateStats();
+        }
+
+        // Search
+        function searchProjects() {
+            const term = document.getElementById('search-input').value.toLowerCase();
+            const filtered = projects.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                p.desc.toLowerCase().includes(term)
+            );
+            renderProjectsList(filtered);
+        }
+
+        // Render projects
+        function renderProjects() {
+            renderProjectsList(projects);
+            updateStats();
+        }
+
+        function renderProjectsList(list) {
+            const container = document.getElementById('projects-list');
+            container.innerHTML = list.map(p => `
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${p.name}</h4>
+                            <p class="text-sm text-gray-600">${p.desc}</p>
+                            <div class="flex flex-wrap gap-4 mt-2 text-sm">
+                                <span class="text-gray-500">IP: ${p.ip}</span>
+                                <span class="text-gray-500">CPU: ${p.cpu}</span>
+                                <span class="text-gray-500">RAM: ${p.memory}</span>
+                                <span class="text-gray-500">Storage: ${p.storage}</span>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            p.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            <i class="fas fa-${p.status === 'active' ? 'check-circle' : 'cog'} mr-1"></i> ${p.status === 'active' ? 'Активен' : 'Обслуживание'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('total-projects').textContent = projects.length;
+            document.getElementById('active-projects').textContent = projects.filter(p => p.status === 'active').length;
+            document.getElementById('maintenance-projects').textContent = projects.filter(p => p.status === 'maintenance').length;
+            
+            const totalStorage = projects.reduce((sum, p) => sum + parseInt(p.storage), 0);
+            document.getElementById('total-storage').textContent = totalStorage + ' GB';
+        }
+
+        // Render recent projects
+        function renderRecent() {
+            const container = document.getElementById('recent-projects');
+            container.innerHTML = projects.slice(0, 3).map(p => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-server text-blue-600"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">${p.name}</p>
+                            <p class="text-xs text-gray-500">${p.status === 'active' ? 'Активен' : 'В обслуживании'}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500">${new Date().toLocaleDateString()}</span>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        renderProjects();
+        renderRecent();
+    </script>
+</body>
+</html>
